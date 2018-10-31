@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+        <title>PATI Meong</title>
+        <style>
+            html,body { 
+                width: 100%; 
+                height: 100%; 
+                padding: 0; 
+                margin: 0; 
+            } 
+            svg { 
+                position: fixed; 
+                top: 0; 
+                left: 0; 
+            }
+        </style>
+    </head>
+    <body>
+        <svg width="100%" height="100%">
+            <path id="m" d="M-10.5,11.5V-8.5h20.8v19.9H-10.5z M5.1-4.3H-5.3V7.4H5.1V-4.3z" style="transform: translate(50px, 40px);"></path>
+            <path id="o" d="M-0.4,8.8c-9.8,0-15.5-3.6-15.5-9c0-5.6,5.7-9.1,15.5-9.1c9.9,0,15.6,3.6,15.6,9.1C15.2,5.3,9.5,8.8-0.4,8.8zM-0.4-5c-6.3,0-10.1,1.8-10.1,4.8c0,2.9,3.7,4.8,10.1,4.8c6.5,0,10.2-1.8,10.2-4.8C9.8-3.2,6.1-5-0.4-5z" style="transform: translate(890px, 908px);"></path>
+            <polyline id="topLine" stroke-width="4.5px" stroke-linejoin="round" stroke-linecap="round" stroke="#000000" fill="none" points="70,42 900,42"></polyline>
+            <polyline id="botLine" stroke-width="4.5px" stroke-linejoin="round" stroke-linecap="round" stroke="#000000" fill="none" points="40,878 900,878 900,863 900,893"></polyline>
+            <polyline id="z" stroke-width="4.5px" stroke-linejoin="round" stroke-linecap="round" stroke="#000000" fill="none"></polyline>
+        </svg>
+        <script>
+            var Line = function( top, bot, originTop, originBot ){
+                this.node = document.getElementById('z').cloneNode();
+                this.coord = { top : top, bot : bot };
+                this.origin = { top : originTop || top, bot : originBot || bot };
+                this.speeds = { top : 0, bot : 0 }
+            }
+
+            Line.prototype.step = function(){
+                var w = document.body.offsetWidth, stf = 100, cns = 6, cs = this.coord, sp = this.speeds, or = this.origin;
+                sp.top += ( -stf * ( cs.top - or.top ) + ( -cns * sp.top ) ) * 0.016;
+                cs.top += sp.top * 0.016;
+                sp.bot += ( -stf * ( cs.bot - or.bot ) + ( -cns * sp.bot ) ) * 0.016;
+                cs.bot += sp.bot * 0.016;
+                this.node.setAttribute( 'points', ( w - 50 ) + ',' + cs.bot + ' ' + 40 + ',' + cs.bot + ' ' + ( w - 50 ) + ',' + cs.top );
+            }
+
+            var Main = function( ) {
+                this.node = document.getElementsByTagName('svg')[0], this.top = 42, this.bot = document.body.offsetHeight - 70;
+                document.getElementById('o').style.transform = 'translate(' + ( document.body.offsetWidth - 60 ) + 'px,' + ( document.body.offsetHeight - 40 ) + 'px)';
+                document.getElementById('m').style.transform = 'translate(' + ( 50 ) + 'px,' + ( 40 ) + 'px)';
+                document.getElementById('topLine').setAttribute( 'points', '' + 70 + ',' + this.top + ' ' + ( document.body.offsetWidth - 50 ) + ',' + this.top );
+                document.getElementById('botLine').setAttribute( 'points', '' + 40 + ',' + this.bot + ' ' + ( document.body.offsetWidth - 50 ) + ',' + this.bot + ' ' + ( document.body.offsetWidth - 50 ) + ',' + ( document.body.offsetHeight - 85 ) + ' ' + ( document.body.offsetWidth - 50 ) + ',' + ( document.body.offsetHeight - 55 ) );
+
+                this.lines = [];
+                this.lines.push( new Line( this.top, this.bot ) );
+                this.node.appendChild( this.lines[ this.lines.length - 1 ].node );
+                
+                document.addEventListener( 'mousedown', this.addLines.bind( this ) );
+                this.step();
+            }
+
+            Main.prototype.addLines = function(){
+                var h = ( this.bot - this.top ) / ( this.lines.length + 1 ), l = this.lines;
+                l[ 0 ].origin.bot = this.top + h;
+                l.push( new Line( this.bot, this.bot, this.bot, this.bot ) );
+                this.node.appendChild( l[ l.length - 1 ].node );
+                for( var i = 1 ; i < l.length ; i++ ) l[ i ].origin = { top : this.bot - h * ( l.length - i ), bot : this.bot - h * ( l.length - i - 1 ) };
+            }
+
+            Main.prototype.step = function( ) {
+                window.requestAnimationFrame( this.step.bind( this ) );
+                for( var i = 0 ; i < this.lines.length ; i++ ) this.lines[ i ].step()
+            };
+
+            new Main();
+        </script>
+    </body>
+</html>
